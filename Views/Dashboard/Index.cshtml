@@ -1,0 +1,142 @@
+@using ServiceMonitor.Web.Models.Enums
+@model IEnumerable<ServiceMonitor.Web.Models.Entities.Service>
+
+@{
+    ViewData["Title"] = "Дашборд";
+
+    var totalCount = Model.Count();
+    var onlineCount = Model.Count(s => s.CurrentStatus == Status.Online);
+    var slowCount = Model.Count(s => s.CurrentStatus == Status.Slow);
+    var offlineCount = Model.Count(s => s.CurrentStatus == Status.Offline);
+}
+
+<div class="container-fluid p-0">
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i><strong>Отлично!</strong> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
+        </div>
+    }
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <h2 class="fw-bold text-secondary mb-0"><i class="bi bi-display me-2"></i>Обзор сервисов</h2>
+        
+        <form asp-action="CheckAll" method="post">
+            <button type="submit" class="btn btn-primary btn-lg shadow-sm w-100">
+                <i class="bi bi-arrow-repeat me-1"></i> Проверить все
+            </button>
+        </form>
+    </div>
+
+    <div class="row mb-4 g-3">
+        <div class="col-6 col-md-3">
+            <div class="card text-white bg-secondary shadow-sm h-100 border-0 rounded-3">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
+                    <h6 class="card-title text-uppercase fw-semibold mb-1"><i class="bi bi-globe me-1"></i> Всего</h6>
+                    <h2 class="display-5 fw-bold mb-0">@totalCount</h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-6 col-md-3">
+            <div class="card text-white bg-success shadow-sm h-100 border-0 rounded-3">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
+                    <h6 class="card-title text-uppercase fw-semibold mb-1"><i class="bi bi-check-circle me-1"></i> Online</h6>
+                    <h2 class="display-5 fw-bold mb-0">@onlineCount</h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-6 col-md-3">
+            <div class="card text-dark bg-warning shadow-sm h-100 border-0 rounded-3">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
+                    <h6 class="card-title text-uppercase fw-semibold mb-1"><i class="bi bi-exclamation-circle me-1"></i> Slow</h6>
+                    <h2 class="display-5 fw-bold mb-0">@slowCount</h2>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-6 col-md-3">
+            <div class="card text-white bg-danger shadow-sm h-100 border-0 rounded-3">
+                <div class="card-body d-flex flex-column justify-content-center align-items-center text-center">
+                    <h6 class="card-title text-uppercase fw-semibold mb-1"><i class="bi bi-x-circle me-1"></i> Offline</h6>
+                    <h2 class="display-5 fw-bold mb-0">@offlineCount</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover table-striped mb-0 align-middle text-nowrap">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-4">Статус</th>
+                            <th>Название</th>
+                            <th>URL</th>
+                            <th>Ping</th>
+                            <th>Последняя проверка</th>
+                            <th class="text-center pe-4">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="ps-4">
+                                    @switch (item.CurrentStatus)
+                                    {
+                                        case Status.Online:
+                                            <span class="badge rounded-pill bg-success px-3 py-2 shadow-sm">🟢 Online</span>
+                                            break;
+                                        case Status.Slow:
+                                            <span class="badge rounded-pill bg-warning text-dark px-3 py-2 shadow-sm">🟡 Slow</span>
+                                            break;
+                                        case Status.Offline:
+                                            <span class="badge rounded-pill bg-danger px-3 py-2 shadow-sm">🔴 Offline</span>
+                                            break;
+                                    }
+                                </td>
+                                <td class="fw-bold">@item.Name</td>
+                                <td>
+                                    <span class="text-muted">@item.TargetUrl</span>
+                                </td>
+                                <td>
+                                    @if (item.ResponseTimeMs.HasValue)
+                                    {
+                                        <span class="badge bg-light text-dark border @(item.ResponseTimeMs >= 3000 ? "border-warning text-warning fw-bold" : "")">
+                                            <i class="bi bi-clock-history"></i> @item.ResponseTimeMs ms
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td class="text-muted small">
+                                    @(item.LastChecked?.ToString("dd.MM.yyyy HH:mm") ?? "Ожидает проверки")
+                                </td>
+                                <td class="text-center pe-4">
+                                    <div class="btn-group shadow-sm" role="group">
+                                        <a href="@item.TargetUrl" target="_blank" class="btn btn-sm btn-outline-primary" title="Открыть сайт">
+                                            <i class="bi bi-box-arrow-up-right"></i>
+                                        </a>
+                                        <a asp-controller="Services" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info" title="Детали">
+                                            <i class="bi bi-info-circle"></i>
+                                        </a>
+                                        <a asp-controller="Services" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary" title="Настроить">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

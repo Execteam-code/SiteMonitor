@@ -1,0 +1,49 @@
+@model ServiceMonitor.Web.Models.Entities.Service
+
+@{
+    ViewData["Title"] = "Детали сервиса";
+}
+
+<div class="container mt-4">
+    <h2>Информация о сервисе</h2>
+    <hr />
+    <div class="card shadow-sm mx-auto" style="max-width: 600px;">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">@Model.Name</h5>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-4 text-muted">ID в базе</dt>
+                <dd class="col-sm-8">@Model.Id</dd>
+
+                <dt class="col-sm-4 text-muted">Название</dt>
+                <dd class="col-sm-8 fw-bold">@Model.Name</dd>
+
+                <dt class="col-sm-4 text-muted">Целевой URL</dt>
+                <dd class="col-sm-8"><a href="@Model.TargetUrl" target="_blank">@Model.TargetUrl</a></dd>
+
+                <dt class="col-sm-4 text-muted">Тех. статус</dt>
+                <dd class="col-sm-8">
+                    @if (Model.IsOnline)
+                    {
+                        <span class="badge bg-success">Online</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Offline / Не проверен</span>
+                    }
+                </dd>
+
+                <dt class="col-sm-4 text-muted">Последняя проверка</dt>
+                <dd class="col-sm-8">@(Model.LastChecked?.ToString("dd.MM.yyyy HH:mm:ss") ?? "Никогда")</dd>
+
+                <dt class="col-sm-4 text-muted">Время ответа</dt>
+                <dd class="col-sm-8">@(Model.ResponseTimeMs.HasValue ? $"{Model.ResponseTimeMs} мс" : "-")</dd>
+            </dl>
+        </div>
+        <div class="card-footer bg-light text-end">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2">Редактировать</a>
+            <a asp-action="Index" class="btn btn-outline-secondary">Назад к списку</a>
+        </div>
+    </div>
+</div>
