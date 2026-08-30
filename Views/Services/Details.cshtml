@@ -1,4 +1,4 @@
-@model ServiceMonitor.Web.Models.Entities.Service
+~@model ServiceMonitor.Web.Models.Entities.Service
 
 @{
     ViewData["Title"] = "Детали сервиса";
@@ -35,15 +35,16 @@
                 </dd>
 
                 <dt class="col-sm-4 text-muted">Последняя проверка</dt>
-                <dd class="col-sm-8">@(Model.LastChecked?.ToString("dd.MM.yyyy HH:mm:ss") ?? "Никогда")</dd>
+                <dd class="col-sm-8">@(Model.LastChecked?.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss") ?? "Никогда")</dd>
 
                 <dt class="col-sm-4 text-muted">Время ответа</dt>
                 <dd class="col-sm-8">@(Model.ResponseTimeMs.HasValue ? $"{Model.ResponseTimeMs} мс" : "-")</dd>
             </dl>
         </div>
         <div class="card-footer bg-light text-end">
-            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2">Редактировать</a>
-            <a asp-action="Index" class="btn btn-outline-secondary">Назад к списку</a>
+            <a asp-controller="Services" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary me-2">Редактировать</a>
+            <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-secondary">Назад к списку</a>
         </div>
     </div>
 </div>
+

@@ -26,35 +26,27 @@ namespace ServiceMonitor.Web.Services
 
             foreach (var service in services)
             {
-                var stopwatch = new Stopwatch();
-                service.LastChecked = DateTime.Now;
+                var stopwatch = Stopwatch.StartNew();
 
                 try
                 {
                     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                    
-                    stopwatch.Start();
                     var response = await client.GetAsync(service.TargetUrl, cts.Token);
-                    stopwatch.Stop();
-
-                    service.ResponseTimeMs = stopwatch.ElapsedMilliseconds;
-
-                    int statusCode = (int)response.StatusCode;
                     
-                    if (statusCode >= 200 && statusCode <= 399)
-                    {
-                        service.IsOnline = true;
-                    }
-                    else
-                    {
-                        service.IsOnline = false;
-                    }
+                    int statusCode = (int)response.StatusCode;
+                    service.IsOnline = statusCode >= 200 && statusCode <= 399;
                 }
-                catch (Exception)
+                catch
                 {
+                    // Перехват любых сетевых ошибок (DNS, Timeout, отсутствие сети)
+                    service.IsOnline = false;
+                }
+                finally
+                {
+                    // Гарантированная фиксация времени независимо от исхода запроса
                     stopwatch.Stop();
                     service.ResponseTimeMs = stopwatch.ElapsedMilliseconds;
-                    service.IsOnline = false;
+                    service.LastChecked = DateTime.UtcNow;
                 }
             }
 
@@ -62,3 +54,4 @@ namespace ServiceMonitor.Web.Services
         }
     }
 }
+~

@@ -23,11 +23,17 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <h2 class="fw-bold text-secondary mb-0"><i class="bi bi-display me-2"></i>Обзор сервисов</h2>
         
-        <form asp-action="CheckAll" method="post">
-            <button type="submit" class="btn btn-primary btn-lg shadow-sm w-100">
-                <i class="bi bi-arrow-repeat me-1"></i> Проверить все
-            </button>
-        </form>
+        <div class="d-flex flex-column flex-sm-row gap-2">
+            <a asp-controller="Services" asp-action="Create" class="btn btn-success btn-lg shadow-sm">
+                <i class="bi bi-plus-circle me-1"></i> Добавить сервис
+            </a>
+            
+            <form asp-controller="Dashboard" asp-action="CheckAll" method="post" class="m-0">
+                <button type="submit" class="btn btn-primary btn-lg shadow-sm w-100">
+                    <i class="bi bi-arrow-repeat me-1"></i> Проверить все
+                </button>
+            </form>
+        </div>
     </div>
 
     <div class="row mb-4 g-3">
@@ -75,7 +81,6 @@
                     <thead class="table-dark">
                         <tr>
                             <th class="ps-4">Статус</th>
-                            <th>Название</th>
                             <th>URL</th>
                             <th>Ping</th>
                             <th>Последняя проверка</th>
@@ -100,14 +105,13 @@
                                             break;
                                     }
                                 </td>
-                                <td class="fw-bold">@item.Name</td>
-                                <td>
-                                    <span class="text-muted">@item.TargetUrl</span>
+                                <td class="fw-bold">
+                                    <a href="@item.TargetUrl" target="_blank" class="text-decoration-none">@item.TargetUrl</a>
                                 </td>
                                 <td>
                                     @if (item.ResponseTimeMs.HasValue)
                                     {
-                                        <span class="badge bg-light text-dark border @(item.ResponseTimeMs >= 3000 ? "border-warning text-warning fw-bold" : "")">
+                                        <span class="badge bg-light text-dark border @(item.ResponseTimeMs > 300 ? "border-warning text-warning fw-bold" : "")">
                                             <i class="bi bi-clock-history"></i> @item.ResponseTimeMs ms
                                         </span>
                                     }
@@ -117,19 +121,19 @@
                                     }
                                 </td>
                                 <td class="text-muted small">
-                                    @(item.LastChecked?.ToString("dd.MM.yyyy HH:mm") ?? "Ожидает проверки")
+                                    @(item.LastChecked?.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss") ?? "Ожидает проверки")
                                 </td>
                                 <td class="text-center pe-4">
                                     <div class="btn-group shadow-sm" role="group">
-                                        <a href="@item.TargetUrl" target="_blank" class="btn btn-sm btn-outline-primary" title="Открыть сайт">
-                                            <i class="bi bi-box-arrow-up-right"></i>
-                                        </a>
                                         <a asp-controller="Services" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info" title="Детали">
-                                            <i class="bi bi-info-circle"></i>
+                                            <i class="bi bi-info-circle"></i> Детали
                                         </a>
-                                        <a asp-controller="Services" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary" title="Настроить">
-                                            <i class="bi bi-pencil"></i>
+                                        <a asp-controller="Services" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary" title="Настройки">
+                                            <i class="bi bi-gear"></i> Настройки
                                         </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-@item.Id" title="Удалить">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -140,3 +144,32 @@
         </div>
     </div>
 </div>
+
+@foreach (var item in Model)
+{
+    <div class="modal fade" id="deleteModal-@item.Id" tabindex="-1" aria-labelledby="deleteModalLabel-@item.Id" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteModalLabel-@item.Id">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Подтверждение удаления
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body text-start text-wrap">
+                    Вы действительно хотите удалить данный сервис из системы мониторинга?
+                    <br /><br />
+                    <span class="text-muted small">URL: @item.TargetUrl</span>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <form asp-controller="Services" asp-action="Delete" asp-route-id="@item.Id" method="post">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-1"></i> Да, удалить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}

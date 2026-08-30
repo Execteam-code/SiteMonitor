@@ -20,6 +20,7 @@ namespace ServiceMonitor.Web.Controllers
             _checker = checker;
         }
 
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var services = await _context.Services
