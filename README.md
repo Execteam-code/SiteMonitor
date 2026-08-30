@@ -23,7 +23,7 @@ Framework Core * **Фронтенд:** Bootstrap 5, Bootstrap Icons * **Сред
 (рекомендуется запуск через Docker для Linux)
 ### Установка и запуск
 1. Клонируйте репозиторий: ```bash git clone 
-   [https://github.com/ВАШ_АККАУНТ/ВАШ_РЕПОЗИТОРИЙ.git](https://github.com/ВАШ_АККАУНТ/ВАШ_РЕПОЗИТОРИЙ.git) 
+   [https://github.com/Execteam-code/SiteMonitor.git](https://github.com/Execteam-code/SiteMonitor.git) 
    cd SiteMonitor ```
 2. Обновите строку подключения к базе данных в 
 `appsettings.json`:
